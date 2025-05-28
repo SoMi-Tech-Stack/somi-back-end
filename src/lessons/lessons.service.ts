@@ -31,9 +31,6 @@ export class LessonService {
       energyLevel,
     );
 
-    console.log('Generated lesson:', generatedLesson);
-    
-
     const searchQuery = `${generatedLesson.piece.title} ${generatedLesson.piece.composer}`;
 
     const videoResults: YoutubeVideo[] =

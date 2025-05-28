@@ -8,10 +8,6 @@ export class LessonController {
 
   @Post('generate')
   generateLesson(@Body() dto: GenerateLessonDto) {
-
-    console.log('Generating lesson with data:', dto);
-    
-
     return this.lessonsService.generateLesson(dto.theme, dto.yearGroup, dto.energyLevel);
   }
 }
