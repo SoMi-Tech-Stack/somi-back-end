@@ -2,6 +2,7 @@ import { PromptTemplate } from '../prompt.types';
 
 export const listeningActivityTemplate: PromptTemplate = {
   template: `Create a music listening activity for {yearGroup} that explores the theme of "{theme}" with a {energyLevel} energy level.
+  Return ONLY a raw JSON object matching the exact structure below. Do not explain anything. Do not add preamble. Do not wrap in markdown. Just output pure valid JSON.
 
 Analyze the input "{theme}" and classify it as:
 1. A composer name (e.g., "Beethoven")
@@ -31,7 +32,7 @@ Examples:
 Always prioritize factual accuracy, appropriate energy level, and exact searchability.
 
 
-Return a JSON object with this EXACT structure:
+Return ONLY valid JSON in this EXACT structure (no explanation or text before or after):
 {
   "piece": {
     "title": "Full title of the piece",
