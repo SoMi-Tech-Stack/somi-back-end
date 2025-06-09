@@ -20,9 +20,9 @@ export class OpenAiService {
     activityType: string,
   ): Promise<LessonActivity> {
     const res = await this.openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
-      temperature: 0.8,
+      temperature: 0.3,
     });
 
     const message = res.choices[0].message.content ?? '';
