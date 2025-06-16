@@ -2,15 +2,37 @@ import { PromptTemplate } from '../prompt.types';
 
 export const listeningActivityTemplate: PromptTemplate = {
   template: `Create a music listening activity for {yearGroup} that explores the theme of "{theme}" with a {energyLevel} energy level.
+  Return ONLY a raw JSON object matching the exact structure below. Do not explain anything. Do not add preamble. Do not wrap in markdown. Just output pure valid JSON.
 
-You MUST select a piece of classical or folk music that strongly connects to the theme "{theme}". 
-Consider these thematic aspects:
-- Musical characteristics that relate to {theme} (e.g., tempo, dynamics, mood)
-- Historical or cultural connections to {theme}
-- Programmatic or storytelling elements that relate to {theme}
-- Visual or imaginative associations with {theme}
+Analyze the input "{theme}" and classify it as:
+1. A composer name (e.g., "Beethoven")
+2. A piece title (e.g., "The Little Old Ford")
+3. A full search query (title + performer, e.g., "The Little Old Ford Billy Murray")
+4. An abstract musical theme (e.g., "Hope", "Autumn", "Adventure")
 
-Return a JSON object with this EXACT structure:
+If the input is type 1–3:
+- DO NOT invent or reinterpret the input.
+- DO NOT add words like "traditional", "folk", or "classical" unless they are already in the original input.
+- Use the input **as-is** for \`youtubeSearchQuery\`, even if it's uncommon.
+- Assume the user intends it to be exact — search directly for it.
+- Composer and title fields should match what is publicly known for the input. Do **not** swap to another piece just because it's more popular.
+
+If the input is type 4 (mood/theme):
+- Select a real and appropriate classical or folk piece that fits the theme and {energyLevel}.
+- Build \`youtubeSearchQuery\` using the selected real piece title + composer name.
+
+DO NOT return approximations or fabricated entries.
+The \`youtubeSearchQuery\` will be used in exact YouTube API search.
+
+Examples:
+- Input: "The Little Old Ford Billy Murray" → \`youtubeSearchQuery\`: "The Little Old Ford Billy Murray"
+- Input: "The Little Old Ford" → \`youtubeSearchQuery\`: "The Little Old Ford"
+- Input: "Joy" → Select a known joyful piece and use that real info
+
+Always prioritize factual accuracy, appropriate energy level, and exact searchability.
+
+
+Return ONLY valid JSON in this EXACT structure (no explanation or text before or after):
 {
   "piece": {
     "title": "Full title of the piece",

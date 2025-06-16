@@ -3,7 +3,7 @@ import { OpenAiService } from 'src/open-ai/open-ai.service';
 import { PromptService } from 'src/prompt/prompt.service';
 import { listeningActivityTemplate } from 'src/prompt/templates/listening-activity.template';
 import { YoutubeService } from 'src/youtube/youtube.service';
-import { LessonActivity } from 'src/open-ai/types/lesson-activity'; // якщо є тип LessonActivity
+import { LessonActivity } from 'src/open-ai/types/lesson-activity';
 import { YoutubeVideo } from './types/youtubeVideo';
 
 @Injectable()
