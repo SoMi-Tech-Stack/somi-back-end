@@ -10,7 +10,7 @@ export class OpenAiService {
   constructor(private readonly configService: ConfigService) {
     this.openai = new OpenAI({
       apiKey: this.configService.get<string>('OPENAI_API_KEY'),
-      timeout: 20000, // 20 секунд таймаут
+      timeout: 20000,
     });
   }
 
@@ -22,16 +22,15 @@ export class OpenAiService {
   ): Promise<LessonActivity> {
     try {
       const stream = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini', // Быстрее и качественнее чем gpt-3.5-turbo
+        model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.3, // Снижено для стабильности и скорости
-        max_tokens: 1500, // Ограничиваем длину ответа
-        stream: true, // Включаем стриминг
+        temperature: 0.3,
+        max_tokens: 1500,
+        stream: true,
       });
 
       let fullContent = '';
       
-      // Собираем контент из стрима
       for await (const chunk of stream) {
         const content = chunk.choices[0]?.delta?.content || '';
         fullContent += content;
