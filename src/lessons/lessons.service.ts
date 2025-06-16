@@ -19,29 +19,40 @@ export class LessonService {
     yearGroupReq: string,
     energyLevel: string,
   ): Promise<LessonActivity & { youtubeVideo: YoutubeVideo | null }> {
-    const { prompt, yearGroup, theme } = this.promptService.generatePrompt(
-      listeningActivityTemplate,
-      { theme: themeReq, yearGroup: yearGroupReq, energyLevel },
-    );
+    try {
+      const { prompt, yearGroup, theme } = this.promptService.generatePrompt(
+        listeningActivityTemplate,
+        { theme: themeReq, yearGroup: yearGroupReq, energyLevel },
+      );
 
-    const generatedLesson = await this.openAiService.generateChatCompletion(
-      prompt,
-      yearGroup,
-      theme,
-      energyLevel,
-    );
+      console.log('⏳ Starting lesson generation...');
+      
+      const generatedLesson = await this.openAiService.generateChatCompletion(
+        prompt,
+        yearGroup,
+        theme,
+        energyLevel,
+      );
 
-    console.log('Generated lesson:', generatedLesson);
-    
+      console.log('✅ Generated lesson:', generatedLesson);
+      
 
-    const searchQuery = `${generatedLesson.piece.title} ${generatedLesson.piece.composer}`;
+      const searchQuery = `${generatedLesson.piece.title} ${generatedLesson.piece.composer}`;
+      console.log('🔍 Searching YouTube for:', searchQuery);
 
-    const videoResults: YoutubeVideo[] =
-      await this.youtubeService.searchVideos(searchQuery);
+      const videoResults: YoutubeVideo[] =
+        await this.youtubeService.searchVideos(searchQuery);
 
-    return {
-      ...generatedLesson,
-      youtubeVideo: videoResults[0] ?? null,
-    };
+      const selectedVideo = videoResults[0] ?? null;
+      console.log('🎥 Selected video:', selectedVideo ? selectedVideo.title : 'No video found');
+
+      return {
+        ...generatedLesson,
+        youtubeVideo: selectedVideo,
+      };
+    } catch (error) {
+      console.error('❌ Error generating lesson:', error);
+      throw new Error('Failed to generate lesson');
+    }
   }
 }

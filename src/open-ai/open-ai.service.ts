@@ -10,6 +10,7 @@ export class OpenAiService {
   constructor(private readonly configService: ConfigService) {
     this.openai = new OpenAI({
       apiKey: this.configService.get<string>('OPENAI_API_KEY'),
+      timeout: 20000, // 20 секунд таймаут
     });
   }
 
@@ -19,15 +20,28 @@ export class OpenAiService {
     theme: string,
     activityType: string,
   ): Promise<LessonActivity> {
-    const res = await this.openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.8,
-    });
+    try {
+      const stream = await this.openai.chat.completions.create({
+        model: 'gpt-4o-mini', // Быстрее и качественнее чем gpt-3.5-turbo
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3, // Снижено для стабильности и скорости
+        max_tokens: 1500, // Ограничиваем длину ответа
+        stream: true, // Включаем стриминг
+      });
 
-    const message = res.choices[0].message.content ?? '';
+      let fullContent = '';
+      
+      // Собираем контент из стрима
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        fullContent += content;
+      }
 
-    return this.parseOpenAiLessonResponse(message, yearGroup, theme, activityType);
+      return this.parseOpenAiLessonResponse(fullContent, yearGroup, theme, activityType);
+    } catch (error) {
+      console.error('OpenAI API error:', error);
+      throw new Error('Failed to generate lesson from OpenAI');
+    }
   }
 
   parseOpenAiLessonResponse(
@@ -46,7 +60,8 @@ export class OpenAiService {
       };
       return lessonActivity;
     } catch (e) {
-      console.log('Error parsing OpenAI response:', e);
+      console.error('Error parsing OpenAI response:', e);
+      console.error('Raw content:', rawContent);
       throw new Error('Invalid JSON format from OpenAI response');
     }
   }
