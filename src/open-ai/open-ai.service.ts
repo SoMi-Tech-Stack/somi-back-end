@@ -51,7 +51,19 @@ export class OpenAiService {
     activityType: string,
   ) {
     try {
-      const parsedContent = JSON.parse(rawContent) as LessonActivity;
+      // Extract JSON content from markdown code blocks if present
+      let jsonContent = rawContent.trim();
+      
+      // Check if content is wrapped in markdown code blocks
+      if (jsonContent.startsWith('```json') && jsonContent.endsWith('```')) {
+        // Remove the markdown code block wrapper
+        jsonContent = jsonContent.slice(7, -3).trim(); // Remove ```json and ```
+      } else if (jsonContent.startsWith('```') && jsonContent.endsWith('```')) {
+        // Handle case where it's wrapped in code blocks without 'json' specifier
+        jsonContent = jsonContent.slice(3, -3).trim(); // Remove ``` and ```
+      }
+      
+      const parsedContent = JSON.parse(jsonContent) as LessonActivity;
       const lessonActivity = {
         ...parsedContent,
         yearGroup: yearGroup,
