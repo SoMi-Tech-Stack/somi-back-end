@@ -20,36 +20,39 @@ export class LessonService {
     energyLevel: string,
   ): Promise<LessonActivity & { youtubeVideo: YoutubeVideo | null }> {
     try {
-      console.log('Step 1: Generating prompt...');
       const { prompt, yearGroup, theme } = this.promptService.generatePrompt(
         listeningActivityTemplate,
         { theme: themeReq, yearGroup: yearGroupReq, energyLevel },
       );
-      console.log('Prompt generated:', prompt);
 
-      console.log('Step 2: Sending prompt to OpenAI...');
+      console.log('⏳ Starting lesson generation...');
+      
       const generatedLesson = await this.openAiService.generateChatCompletion(
         prompt,
         yearGroup,
         theme,
         energyLevel,
       );
-      console.log('OpenAI response:', generatedLesson);
+
+      console.log('✅ Generated lesson:', generatedLesson);
+      
 
       const searchQuery = `${generatedLesson.piece.title} ${generatedLesson.piece.composer}`;
-      console.log('Step 3: Searching YouTube with query:', searchQuery);
+      console.log('🔍 Searching YouTube for:', searchQuery);
 
       const videoResults: YoutubeVideo[] =
         await this.youtubeService.searchVideos(searchQuery);
-      console.log('YouTube results:', videoResults);
+
+      const selectedVideo = videoResults[0] ?? null;
+      console.log('🎥 Selected video:', selectedVideo ? selectedVideo.title : 'No video found');
 
       return {
         ...generatedLesson,
-        youtubeVideo: videoResults[0] ?? null,
+        youtubeVideo: selectedVideo,
       };
     } catch (error) {
-      console.error('❌ Error in generateLesson:', error);
-      throw error;
+      console.error('❌ Error generating lesson:', error);
+      throw new Error('Failed to generate lesson');
     }
   }
 }

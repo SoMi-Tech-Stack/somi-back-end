@@ -17,7 +17,7 @@ export class YoutubeService {
     this.apiKey = this.configService.get<string>('YOUTUBE_API_KEY', '');
   }
 
-  async searchVideos(query: string, maxResults = 5): Promise<YoutubeVideo[]> {
+  async searchVideos(query: string, maxResults = 3): Promise<YoutubeVideo[]> {
     try {
       const searchRes = await axios.get('https://www.googleapis.com/youtube/v3/search', {
         params: {
@@ -28,6 +28,7 @@ export class YoutubeService {
           maxResults,
           safeSearch: 'strict',
         },
+        timeout: 8000,
       });
 
       const items = searchRes.data.items;
@@ -45,6 +46,7 @@ export class YoutubeService {
           part: 'snippet,contentDetails',
           id: videoIds,
         },
+        timeout: 7000,
       });
 
       const filtered = detailsRes.data.items.filter((item) => {
@@ -54,6 +56,12 @@ export class YoutubeService {
 
       if (!filtered.length) {
         this.logger.warn(`No suitable videos found for query: "${query}"`);
+
+        return items.slice(0, 1).map((item) => ({
+          title: item.snippet.title,
+          videoId: item.id.videoId,
+          url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+        }));
       }
 
       return filtered.map((item) => ({
@@ -63,7 +71,8 @@ export class YoutubeService {
       }));
     } catch (error) {
       this.logger.error('YouTube API error', error);
-      throw new Error('Failed to fetch videos from YouTube');
+
+      return [];
     }
   }
 
